@@ -81,7 +81,8 @@ episode_scores = []
 epsgreedy = EpsilonGreedy(eps_start, eps_stop, eps_decay)
 for episode in range(episodes):
     e_start = time.time()
-    scores = play(brain_name, agent, env, epsgreedy.sample())
+    eps = epsgreedy.sample()
+    scores = play(brain_name, agent, env, eps)
     avg_score = np.mean(scores)
     episode_scores.append(scores)
 
@@ -95,7 +96,7 @@ for episode in range(episodes):
     agent.save()
     e_stop = time.time()
     seconds = e_stop-e_start
-    print(f"[Episode {episode}, Time(s): {seconds:.1f}] Score: {avg_score:.3f}, MeanOver{target_score_episodes}: {mean_target_score:.3f}")
+    print(f"[Episode {episode}, Time(s): {seconds:.1f}, Eps:{eps:.5f}] Score: {avg_score:.3f}, MeanOver{target_score_episodes}: {mean_target_score:.3f}")
 
 # Finish
 env.close()
