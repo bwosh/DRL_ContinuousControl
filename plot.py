@@ -15,7 +15,7 @@ def save_plot_results(title, values, mean_length, target_score, peek_length=15):
     plt.hlines(target_score,0,len(values), linestyle='--', alpha=0.5)
 
     plt.plot(values, alpha=0.2, label="Train scores")
-    plt.plot(mean(values, peek_length), alpha=0.5, label="Mean average over {peek_length} last episodes")
+    plt.plot(mean(values, peek_length), alpha=0.5, label=f"Mean average over {peek_length} last episodes")
     plt.plot(mean(values, mean_length), label=F"Mean average over {mean_length} last episodes")
 
     plt.legend()

@@ -7,10 +7,10 @@ from utils import StateAggregator
 
 # Parameters
 approach_title = "RANDOM"
-episodes = 5
+episodes = 150
 frames = 4
-target_avg_score = 1.
-target_score_episodes = 3
+target_avg_score = 30
+target_score_episodes = 100
 
 # Create environment
 env = UnityEnvironment(file_name='./Reacher.app')
