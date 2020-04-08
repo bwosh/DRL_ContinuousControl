@@ -40,5 +40,5 @@ class ActorCriticNet(nn.Module):
         critic_opt = torch.optim.Adam(self.critic_body.parameters(), lr=1e-3)
 
     def forward(self, state):
-        action = torch.tanh(self.actor(state))
+        action = torch.tanh(self.actor_body(state))
         return action

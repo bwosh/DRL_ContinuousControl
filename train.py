@@ -2,6 +2,7 @@ from unityagents import UnityEnvironment
 import numpy as np
 
 from agent import Agent
+from epsilon_greedy import EpsilonGreedy
 from plot import save_plot_results
 from utils import StateAggregator
 
@@ -11,6 +12,11 @@ episodes = 150
 frames = 4
 target_avg_score = 30
 target_score_episodes = 100
+eps_start = 1
+eps_stop = 0.01
+eps_decay = 0.97
+print(f"Estimated epsilon on end: {eps_start*(eps_decay**episodes):0.3f} Min:{eps_stop:0.3f}")
+
 
 # Create environment
 env = UnityEnvironment(file_name='./Reacher.app')
@@ -26,7 +32,7 @@ state_size = states.shape[1]
 
 agent = Agent(state_size, action_size)
 
-def play(brain_name, agent, env):
+def play(brain_name, agent, env, eps):
     # Reset environment and variables
     env_info = env.reset(train_mode=True)[brain_name]      
     states = env_info.vector_observations                  
@@ -39,7 +45,7 @@ def play(brain_name, agent, env):
         # Choose actions
         actions = []
         for n_agent in range(num_agents):
-            action = agent.act(states[n_agent])
+            action = agent.act(states[n_agent], eps)
             actions.append(action)
         actions = np.array(actions)
         actions = np.clip(actions, -1, 1)
@@ -71,8 +77,9 @@ def play(brain_name, agent, env):
 
 # Try to solve environment
 episode_scores = []
+epsgreedy = EpsilonGreedy(eps_start, eps_stop, eps_decay)
 for episode in range(episodes):
-    scores = play(brain_name, agent, env)
+    scores = play(brain_name, agent, env, epsgreedy.sample())
     avg_score = np.mean(scores)
     episode_scores.append(scores)
 
