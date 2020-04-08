@@ -33,12 +33,12 @@ class CriticNet(nn.Module):
 class ActorCriticNet(nn.Module):
     def __init__(self, state_size, action_size):
         super(ActorCriticNet, self).__init__()
-        self.actor_body = ActorNet(state_size, action_size)
-        self.critic_body = CriticNet(state_size, action_size)
+        self.actor = ActorNet(state_size, action_size)
+        self.critic = CriticNet(state_size, action_size)
 
-        actor_opt = torch.optim.Adam(self.actor_body.parameters(), lr=1e-4)
-        critic_opt = torch.optim.Adam(self.critic_body.parameters(), lr=1e-3)
+        self.actor_opt = torch.optim.Adam(self.actor.parameters(), lr=1e-4)
+        self.critic_opt = torch.optim.Adam(self.critic.parameters(), lr=1e-3)
 
     def forward(self, state):
-        action = torch.tanh(self.actor_body(state))
+        action = torch.tanh(self.actor(state))
         return action

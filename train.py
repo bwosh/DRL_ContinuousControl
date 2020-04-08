@@ -1,5 +1,6 @@
 from unityagents import UnityEnvironment
 import numpy as np
+import time
 
 from agent import Agent
 from epsilon_greedy import EpsilonGreedy
@@ -8,15 +9,14 @@ from utils import StateAggregator
 
 # Parameters
 approach_title = "RANDOM"
-episodes = 150
+episodes = 3000
 frames = 4
 target_avg_score = 30
 target_score_episodes = 100
 eps_start = 1
 eps_stop = 0.01
-eps_decay = 0.97
-print(f"Estimated epsilon on end: {eps_start*(eps_decay**episodes):0.3f} Min:{eps_stop:0.3f}")
-
+eps_decay = 0.9975
+print(f"Estimated epsilon on end: {eps_start*(eps_decay**episodes):0.6f} Min:{eps_stop:0.3f}")
 
 # Create environment
 env = UnityEnvironment(file_name='./Reacher.app')
@@ -30,7 +30,7 @@ num_agents = len(env_info.agents)
 action_size = brain.vector_action_space_size
 state_size = states.shape[1]
 
-agent = Agent(state_size, action_size)
+agent = Agent(state_size*frames, action_size)
 
 def play(brain_name, agent, env, eps):
     # Reset environment and variables
@@ -42,10 +42,12 @@ def play(brain_name, agent, env, eps):
     next_state_agg = StateAggregator(states, frames)
 
     while True:
+        aggregated_states = state_agg.to_input()
+        
         # Choose actions
         actions = []
         for n_agent in range(num_agents):
-            action = agent.act(states[n_agent], eps)
+            action = agent.act(aggregated_states[n_agent], eps)
             actions.append(action)
         actions = np.array(actions)
         actions = np.clip(actions, -1, 1)
@@ -62,7 +64,6 @@ def play(brain_name, agent, env, eps):
         next_state_agg.push(next_states)
 
         # Inform agent about the results
-        aggregated_states = state_agg.to_input()
         aggregated_next_states = next_state_agg.to_input()
         for n_agent in range(num_agents):
             agent.step(aggregated_states[n_agent], actions[n_agent], rewards[n_agent], 
@@ -79,6 +80,7 @@ def play(brain_name, agent, env, eps):
 episode_scores = []
 epsgreedy = EpsilonGreedy(eps_start, eps_stop, eps_decay)
 for episode in range(episodes):
+    e_start = time.time()
     scores = play(brain_name, agent, env, epsgreedy.sample())
     avg_score = np.mean(scores)
     episode_scores.append(scores)
@@ -90,7 +92,10 @@ for episode in range(episodes):
         print(f"Mean score: {mean_target_score:.3f} over last {target_score_episodes} episodes.")
         break
 
-    print(f"[Episode {episode}] Score: {avg_score:.3f}, MeanOver{target_score_episodes}: {mean_target_score:.3f}")
+    agent.save()
+    e_stop = time.time()
+    seconds = e_stop-e_start
+    print(f"[Episode {episode}, Time(s): {seconds:.1f}] Score: {avg_score:.3f}, MeanOver{target_score_episodes}: {mean_target_score:.3f}")
 
 # Finish
 env.close()
