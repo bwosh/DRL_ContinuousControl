@@ -2,9 +2,11 @@ from unityagents import UnityEnvironment
 import numpy as np
 
 from agent import Agent
+from plot import save_plot_results
 from utils import StateAggregator
 
 # Parameters
+approach_title = "RANDOM"
 episodes = 5
 frames = 4
 target_avg_score = 1.
@@ -82,8 +84,10 @@ for episode in range(episodes):
         break
 
     print(f"[Episode {episode}] Score: {avg_score:.3f}, MeanOver{target_score_episodes}: {mean_target_score:.3f}")
-env.close()
 
+# Finish
+env.close()
+save_plot_results(approach_title, np.mean(episode_scores, axis=1), target_score_episodes, target_avg_score)
 
 
 
