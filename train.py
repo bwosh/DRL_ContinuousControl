@@ -9,14 +9,13 @@ from utils import StateAggregator
 
 # Parameters
 approach_title = "RANDOM"
-episodes = 3000
+episodes = 5000
 frames = 4
 target_avg_score = 30
 target_score_episodes = 100
 eps_start = 1
 eps_stop = 0.01
 eps_decay = 0.9975
-print(f"Estimated epsilon on end: {eps_start*(eps_decay**episodes):0.6f} Min:{eps_stop:0.3f}")
 
 # Create environment
 env = UnityEnvironment(file_name='./Reacher.app')
@@ -30,6 +29,7 @@ num_agents = len(env_info.agents)
 action_size = brain.vector_action_space_size
 state_size = states.shape[1]
 
+print(f"Estimated epsilon on end: {eps_start*(eps_decay**episodes):0.6f} Min:{eps_stop:0.3f}")
 agent = Agent(state_size*frames, action_size)
 
 def play(brain_name, agent, env, eps):
