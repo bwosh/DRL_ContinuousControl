@@ -1,51 +1,89 @@
 from unityagents import UnityEnvironment
 import numpy as np
 
-env = UnityEnvironment(file_name='./Reacher.app')
+from agent import Agent
+from utils import StateAggregator
 
-# get the default brain
+# Parameters
+episodes = 5
+frames = 4
+target_avg_score = 1.
+target_score_episodes = 3
+
+# Create environment
+env = UnityEnvironment(file_name='./Reacher.app')
 brain_name = env.brain_names[0]
 brain = env.brains[brain_name]
 
-# reset the environment
 env_info = env.reset(train_mode=True)[brain_name]
-
-# number of agents
-num_agents = len(env_info.agents)
-print('Number of agents:', num_agents)
-
-# size of each action
-action_size = brain.vector_action_space_size
-print('Size of each action:', action_size)
-
-# examine the state space 
 states = env_info.vector_observations
+
+num_agents = len(env_info.agents)
+action_size = brain.vector_action_space_size
 state_size = states.shape[1]
-print('There are {} agents. Each observes a state with length: {}'.format(states.shape[0], state_size))
-print('The state for the first agent looks like:', states[0])
 
+agent = Agent(state_size, action_size)
 
+def play(brain_name, agent, env):
+    # Reset environment and variables
+    env_info = env.reset(train_mode=True)[brain_name]      
+    states = env_info.vector_observations                  
+    scores = np.zeros(num_agents)                          
 
-env_info = env.reset(train_mode=False)[brain_name]     # reset the environment    
-states = env_info.vector_observations                  # get the current state (for each agent)
-scores = np.zeros(num_agents)                          # initialize the score (for each agent)
-moves = 0
-while True:
-    actions = np.random.randn(num_agents, action_size) # select an action (for each agent)
-    actions = np.clip(actions, -1, 1)                  # all actions between -1 and 1
-    env_info = env.step(actions)[brain_name]           # send all actions to tne environment
-    next_states = env_info.vector_observations         # get next state (for each agent)
-    rewards = env_info.rewards                         # get reward (for each agent)
-    dones = env_info.local_done                        # see if episode finished
-    scores += env_info.rewards                         # update the score (for each agent)
-    states = next_states                               # roll over states to next time step
-    moves +=1
-    print(moves)
-    if np.any(dones):                                  # exit loop if episode finished
+    state_agg = StateAggregator(states, frames)
+    next_state_agg = StateAggregator(states, frames)
+
+    while True:
+        # Choose actions
+        actions = []
+        for n_agent in range(num_agents):
+            action = agent.act(states[n_agent])
+            actions.append(action)
+        actions = np.array(actions)
+        actions = np.clip(actions, -1, 1)
+
+        # Interact with env
+        env_info = env.step(actions)[brain_name]           # send all actions to tne environment
+
+        # Gather data
+        rewards = env_info.rewards                        
+        dones = env_info.local_done                        
+        scores += env_info.rewards                        
+        next_states = env_info.vector_observations         # get next state (for each agent)
+
+        next_state_agg.push(next_states)
+
+        # Inform agent about the results
+        aggregated_states = state_agg.to_input()
+        aggregated_next_states = next_state_agg.to_input()
+        for n_agent in range(num_agents):
+            agent.step(aggregated_states[n_agent], actions[n_agent], rewards[n_agent], 
+                        aggregated_next_states[n_agent], dones[n_agent])
+
+        # Finish episode step
+        states = next_states 
+        state_agg.push(states)
+        if np.any(dones):
+            break
+    return scores
+
+# Try to solve environment
+episode_scores = []
+for episode in range(episodes):
+    scores = play(brain_name, agent, env)
+    avg_score = np.mean(scores)
+    episode_scores.append(scores)
+
+    # Solve rule
+    mean_target_score = np.mean(episode_scores[-target_score_episodes:])
+    if len(episode_scores) >= target_score_episodes and mean_target_score>=target_avg_score:
+        print(f"Environment solved after : {episode+1} episodes.")
+        print(f"Mean score: {mean_target_score:.3f} over last {target_score_episodes} episodes.")
         break
-print('Total score (averaged over agents) this episode: {}'.format(np.mean(scores)))
-print(moves)
 
-
+    print(f"[Episode {episode}] Score: {avg_score:.3f}, MeanOver{target_score_episodes}: {mean_target_score:.3f}")
 env.close()
+
+
+
 
