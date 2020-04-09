@@ -9,13 +9,14 @@ from utils import StateAggregator
 
 # Parameters
 approach_title = "RANDOM"
-episodes = 5000
-frames = 4
+episodes = 200
+frames = 1
 target_avg_score = 30
 target_score_episodes = 100
 eps_start = 1
 eps_stop = 0.01
-eps_decay = 0.9975
+epc_percentage = 0.8 # at 80% of episodes eps will reach eps_stop
+eps_decay = pow(eps_stop, 1/(epc_percentage*episodes))
 
 # Create environment
 env = UnityEnvironment(file_name='./Reacher.app')
