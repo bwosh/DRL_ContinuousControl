@@ -92,9 +92,10 @@ for episode in range(episodes):
 
     # Solve rule
     mean_target_score = np.mean(episode_scores[-target_score_episodes:])
+    max_target_score = np.max(episode_scores[-target_score_episodes:])
     if len(episode_scores) >= target_score_episodes and mean_target_score>=target_avg_score:
         print(f"Environment solved after : {episode+1} episodes.")
-        print(f"Mean score: {mean_target_score:.3f} over last {target_score_episodes} episodes.")
+        print(f"Mean score: {mean_target_score:.3f} over last {target_score_episodes} episodes. (max={max_target_score:.3f})")
         break
 
     agent.save()

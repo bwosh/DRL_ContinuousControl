@@ -13,7 +13,7 @@ def tensor(t, device):
     return torch.tensor(t, dtype=torch.float).to(device)
 
 class Agent:
-    def __init__(self, state_size, action_size, gamma=0.0994, update_every = 80, buffer_size = 2**10, batch_size=4, tau = 1e-3, device="cpu"):
+    def __init__(self, state_size, action_size, gamma=0.0994, update_every = 20, update_cycles = 10, buffer_size = 2**10, batch_size=4, tau = 1e-3, device="cpu"):
         print("=== AGENT CREATED ===")
         self.state_size = state_size
         self.action_size = action_size
@@ -22,6 +22,7 @@ class Agent:
         self.tau = tau
         self.batch_size = batch_size
         self.gamma = gamma
+        self.update_cycles = update_cycles
 
         self.network = ActorCriticNet(state_size, action_size)
         self.target_network = ActorCriticNet(state_size, action_size)
@@ -47,11 +48,12 @@ class Agent:
     def step(self, state, action, reward, next_state, done):
         self.memory.add(state, action, reward, next_state, done)
 
-        #self.t_step = (self.t_step + 1) % self.update_every
-        #if self.t_step == 0:
-        if len(self.memory) > self.batch_size:
-            experiences = self.memory.sample()
-            self.learn(experiences)
+        self.t_step = (self.t_step + 1) % self.update_every
+        if self.t_step == 0:
+            if len(self.memory) > self.batch_size:
+                for uc in range(self.update_cycles):
+                    experiences = self.memory.sample()
+                    self.learn(experiences)
 
     def learn(self, experiences):
         states, actions, rewards, next_states, dones = experiences

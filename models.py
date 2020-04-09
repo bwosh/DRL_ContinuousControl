@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 
 class ActorNet(nn.Module):
-    def __init__(self, state_size, action_size, fc1_units=4, fc2_units=8):
+    def __init__(self, state_size, action_size, fc1_units=64, fc2_units=64):
         super(ActorNet, self).__init__()
         self.fc1 = nn.Linear(state_size, fc1_units)
         self.fc2 = nn.Linear(fc1_units, fc2_units)
@@ -17,7 +17,7 @@ class ActorNet(nn.Module):
 
 
 class CriticNet(nn.Module):
-    def __init__(self, state_size, action_size, fc1_units=4, fc2_units=8):
+    def __init__(self, state_size, action_size, fc1_units=64, fc2_units=64):
         super(CriticNet, self).__init__()
         self.fc1 = nn.Linear(state_size, fc1_units)
         self.fc2 = nn.Linear(fc1_units + action_size, fc2_units)
