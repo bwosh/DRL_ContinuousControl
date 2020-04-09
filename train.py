@@ -6,6 +6,7 @@ from agent import Agent
 from epsilon_greedy import EpsilonGreedy
 from plot import save_plot_results
 from utils import StateAggregator
+from tqdm import tqdm
 
 # Parameters
 approach_title = "RANDOM"
@@ -13,10 +14,11 @@ episodes = 200
 frames = 1
 target_avg_score = 30
 target_score_episodes = 100
-eps_start = 1
+eps_start = 0.5
 eps_stop = 0.01
 epc_percentage = 0.8 # at 80% of episodes eps will reach eps_stop
 eps_decay = pow(eps_stop, 1/(epc_percentage*episodes))
+moves_per_episode = 1000
 
 # Create environment
 env = UnityEnvironment(file_name='./Reacher.app')
@@ -33,7 +35,7 @@ state_size = states.shape[1]
 print(f"Estimated epsilon on end: {eps_start*(eps_decay**episodes):0.6f} Min:{eps_stop:0.3f}")
 agent = Agent(state_size*frames, action_size)
 
-def play(brain_name, agent, env, eps):
+def play(brain_name, agent, env, eps, pbar):
     # Reset environment and variables
     env_info = env.reset(train_mode=True)[brain_name]      
     states = env_info.vector_observations                  
@@ -51,7 +53,6 @@ def play(brain_name, agent, env, eps):
             action = agent.act(aggregated_states[n_agent], eps)
             actions.append(action)
         actions = np.array(actions)
-        actions = np.clip(actions, -1, 1)
 
         # Interact with env
         env_info = env.step(actions)[brain_name]           # send all actions to tne environment
@@ -61,11 +62,11 @@ def play(brain_name, agent, env, eps):
         dones = env_info.local_done                        
         scores += env_info.rewards                        
         next_states = env_info.vector_observations         # get next state (for each agent)
-
         next_state_agg.push(next_states)
 
         # Inform agent about the results
         aggregated_next_states = next_state_agg.to_input()
+        pbar.update()
         for n_agent in range(num_agents):
             agent.step(aggregated_states[n_agent], actions[n_agent], rewards[n_agent], 
                         aggregated_next_states[n_agent], dones[n_agent])
@@ -80,10 +81,12 @@ def play(brain_name, agent, env, eps):
 # Try to solve environment
 episode_scores = []
 epsgreedy = EpsilonGreedy(eps_start, eps_stop, eps_decay)
+pbar = tqdm(total=episodes*moves_per_episode)
 for episode in range(episodes):
+    pbar.set_description(f"E{episode+1}/{episodes}")
     e_start = time.time()
     eps = epsgreedy.sample()
-    scores = play(brain_name, agent, env, eps)
+    scores = play(brain_name, agent, env, eps, pbar)
     avg_score = np.mean(scores)
     episode_scores.append(scores)
 
