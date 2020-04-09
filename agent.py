@@ -72,14 +72,14 @@ class Agent:
         q = self.network.critic(states, actions)
         critic_loss = (q - q_targets_next).pow(2).mul(0.5).sum(-1).mean()
 
-        self.network.zero_grad()
+        self.network.critic_opt.zero_grad()
         critic_loss.backward()
         self.network.critic_opt.step()
 
         action = self.network.actor(states)
         policy_loss = -self.network.critic(states.detach(), action).mean()
 
-        self.network.zero_grad()
+        self.network.actor_opt.zero_grad()
         policy_loss.backward()
         self.network.actor_opt.step()
 
