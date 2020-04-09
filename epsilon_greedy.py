@@ -1,4 +1,4 @@
-class EpsilonGreedy():
+class EpsilonGreedy(): # toDO remove ?
     def __init__(self, start, stop, decay):
         self.current = start
         self.stop = stop

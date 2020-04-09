@@ -8,20 +8,22 @@ from plot import save_plot_results
 from utils import StateAggregator
 from tqdm import tqdm
 
+from timer import Timer
+
 # Parameters
 approach_title = "RANDOM"
 episodes = 200
 frames = 1
 target_avg_score = 30
 target_score_episodes = 100
-eps_start = 1
+eps_start = 0.6
 eps_stop = 0.01
-epc_percentage = 0.8 # at 80% of episodes eps will reach eps_stop
-eps_decay = pow(eps_stop, 1/(epc_percentage*episodes))
+epc_percentage = 0.9 # at 80% of episodes eps will reach eps_stop
+eps_decay = pow(eps_stop/eps_start, 1/(epc_percentage*episodes))
 moves_per_episode = 1000
 
 # Create environment
-env = UnityEnvironment(file_name='./Reacher_Linux_NoVis/Reacher.x86_64')
+env = UnityEnvironment(file_name='../Reacher_Linux_NoVis/Reacher.x86_64')
 brain_name = env.brain_names[0]
 brain = env.brains[brain_name]
 
@@ -35,7 +37,7 @@ state_size = states.shape[1]
 print(f"Estimated epsilon on end: {eps_start*(eps_decay**episodes):0.6f} Min:{eps_stop:0.3f}")
 agent = Agent(state_size*frames, action_size)
 
-def play(brain_name, agent, env, eps, pbar):
+def play(brain_name, agent, env, pbar):
     # Reset environment and variables
     env_info = env.reset(train_mode=True)[brain_name]      
     states = env_info.vector_observations                  
@@ -49,13 +51,17 @@ def play(brain_name, agent, env, eps, pbar):
         
         # Choose actions
         actions = []
+        ttt = Timer("Acting")
         for n_agent in range(num_agents):
-            action = agent.act(aggregated_states[n_agent], eps)
+            action = agent.act(aggregated_states[n_agent])
             actions.append(action)
         actions = np.array(actions)
+        ttt.finish()
 
         # Interact with env
+        ttt = Timer("Interact")
         env_info = env.step(actions)[brain_name]           # send all actions to tne environment
+        ttt.finish()
 
         # Gather data
         rewards = env_info.rewards                        
@@ -67,9 +73,11 @@ def play(brain_name, agent, env, eps, pbar):
         # Inform agent about the results
         aggregated_next_states = next_state_agg.to_input()
         pbar.update()
+        ttt = Timer("Stepping")
         for n_agent in range(num_agents):
             agent.step(aggregated_states[n_agent], actions[n_agent], rewards[n_agent], 
                         aggregated_next_states[n_agent], dones[n_agent])
+        ttt.finish()
 
         # Finish episode step
         states = next_states 
@@ -80,13 +88,13 @@ def play(brain_name, agent, env, eps, pbar):
 
 # Try to solve environment
 episode_scores = []
-epsgreedy = EpsilonGreedy(eps_start, eps_stop, eps_decay)
+epsgreedy = EpsilonGreedy(eps_start, eps_stop, eps_decay) # TODO remove eps
 pbar = tqdm(total=episodes*moves_per_episode)
 for episode in range(episodes):
     pbar.set_description(f"E{episode+1}/{episodes}")
     e_start = time.time()
     eps = epsgreedy.sample()
-    scores = play(brain_name, agent, env, eps, pbar)
+    scores = play(brain_name, agent, env, pbar)
     avg_score = np.mean(scores)
     episode_scores.append(scores)
 
