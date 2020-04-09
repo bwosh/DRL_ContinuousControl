@@ -13,7 +13,7 @@ def tensor(t, device):
     return torch.tensor(t, dtype=torch.float).to(device)
 
 class Agent:
-    def __init__(self, state_size, action_size, gamma=0.0994, update_every = 20, update_cycles = 10, buffer_size = 2**10, batch_size=4, tau = 1e-3, device="cpu"):
+    def __init__(self, state_size, action_size, gamma=0.0994, update_every = 20, update_cycles = 10, buffer_size = 2**10, batch_size=4, tau = 1e-3, device="cuda"):
         print("=== AGENT CREATED ===")
         self.state_size = state_size
         self.action_size = action_size
@@ -24,8 +24,8 @@ class Agent:
         self.gamma = gamma
         self.update_cycles = update_cycles
 
-        self.network = ActorCriticNet(state_size, action_size)
-        self.target_network = ActorCriticNet(state_size, action_size)
+        self.network = ActorCriticNet(state_size, action_size).to(device)
+        self.target_network = ActorCriticNet(state_size, action_size).to(device)
         self.target_network.load_state_dict(self.network.state_dict())
 
         # Control variables

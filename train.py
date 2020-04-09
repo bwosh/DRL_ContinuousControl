@@ -14,14 +14,14 @@ episodes = 200
 frames = 1
 target_avg_score = 30
 target_score_episodes = 100
-eps_start = 0.5
+eps_start = 1
 eps_stop = 0.01
 epc_percentage = 0.8 # at 80% of episodes eps will reach eps_stop
 eps_decay = pow(eps_stop, 1/(epc_percentage*episodes))
 moves_per_episode = 1000
 
 # Create environment
-env = UnityEnvironment(file_name='./Reacher.app')
+env = UnityEnvironment(file_name='./Reacher_Linux_NoVis/Reacher.x86_64')
 brain_name = env.brain_names[0]
 brain = env.brains[brain_name]
 
