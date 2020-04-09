@@ -101,7 +101,7 @@ for episode in range(episodes):
     agent.save()
     e_stop = time.time()
     seconds = e_stop-e_start
-    print(f"[Episode {episode}, Time(s): {seconds:.1f}, Eps:{eps:.5f}] Score: {avg_score:.3f}, MeanOver{target_score_episodes}: {mean_target_score:.3f}")
+    print(f"[Episode {episode}, Time(s): {seconds:.1f}, Eps:{eps:.5f}] Score: {avg_score:.3f}, MeanOver{target_score_episodes}: {mean_target_score:.3f}, Max={max_target_score:.3f}")
 
 # Finish
 env.close()
