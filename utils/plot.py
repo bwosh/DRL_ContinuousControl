@@ -23,6 +23,6 @@ def save_plot_results(title, values, mean_length, target_score, peek_length=15):
 
     now = datetime.now()
     timedata = now.strftime("%Y%d%m_%H%M%S")
-    filename = f"results_{title}_{timedata}.png"
+    filename = f"data/results_{title}_{timedata}.png"
     plt.savefig(filename)
 
