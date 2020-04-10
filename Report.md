@@ -25,7 +25,7 @@ The result was slightly better byt still without success:
 ![plot](./data/results_RANDOM_20200904_195650.png)
 
 ### Attempt 3 (THE BEST)
-First good results was achieved after setting learning rate of critic & actor both to 1e-4 with hidden layer neuron counts equal to (128,128). Batch normalization was removed from networks. The environment was solved in 115 episodes (training weights can be found in [/data/](/data/) folder.)
+First good results was achieved after setting learning rate of critic & actor both to 1e-4 with hidden layer neuron counts equal to (128,128). Batch normalization was removed from networks. The environment was solved in **115 episodes** (training weights can be found in [/data/](/data/) folder.)
 ![plot](./data/results_DDPG%20128+128_20200904_224050.png)
 
 
