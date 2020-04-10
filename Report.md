@@ -50,3 +50,7 @@ That might involve:
 * Adding more penalty for no being in target location
 * Balancing the replay memory in terms of positive and negative samples
 * Finally: doing search of parameters using all points above
+
+## Training screenshot
+For interest of annybody dealing with siilar pdoject: training time of "Attempt3" version took 15.5 minutes on RTX 2080 Max-Q card + i7-9750H processor.  
+![screenshot](./data/train.png)
